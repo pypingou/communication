@@ -224,4 +224,9 @@ std::uint32_t Runtime::GetApplicationId() const noexcept
     return application_id_;
 }
 
+const impl::GlobalConfiguration& Runtime::GetGlobalConfiguration() const noexcept
+{
+    return configuration_.GetGlobalConfiguration();
+}
+
 }  // namespace score::mw::com::impl::lola

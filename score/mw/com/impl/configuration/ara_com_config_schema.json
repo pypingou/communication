@@ -384,6 +384,12 @@
                         "SIMULATION"
                     ],
                     "default": "SIMULATION"
+                },
+                "shm-path-prefix": {
+                    "description": "Path prefix for shared memory objects. Allows customizing where shared memory files are created. Must end with a slash. Default is '/dev/shm/' on Linux and '/dev/shmem/' on QNX.",
+                    "type": "string",
+                    "pattern": ".*/$",
+                    "examples": ["/dev/shm/", "/dev/shm/lola_qm/", "/tmp/shm/"]
                 }
             }
         },

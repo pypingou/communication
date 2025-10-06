@@ -20,6 +20,8 @@
 
 #include <cstdint>
 
+namespace score::mw::com::impl { class GlobalConfiguration; }
+
 namespace score::mw::com::impl::lola
 {
 
@@ -47,6 +49,9 @@ class IRuntime : public impl::IRuntimeBinding
     virtual pid_t GetPid() const noexcept = 0;
     /// \brief We need our Application ID in several locations/frequently. So the runtime shall provide/cache it.
     virtual std::uint32_t GetApplicationId() const noexcept = 0;
+
+    /// \brief Returns the global configuration.
+    virtual const impl::GlobalConfiguration& GetGlobalConfiguration() const noexcept = 0;
 
   protected:
     IRuntime(IRuntime&&) noexcept = default;

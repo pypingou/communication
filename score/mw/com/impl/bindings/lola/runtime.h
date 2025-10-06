@@ -85,6 +85,8 @@ class Runtime final : public IRuntime
 
     std::uint32_t GetApplicationId() const noexcept override;
 
+    const impl::GlobalConfiguration& GetGlobalConfiguration() const noexcept override;
+
   private:
     const Configuration& configuration_;
     concurrency::Executor& long_running_threads_;

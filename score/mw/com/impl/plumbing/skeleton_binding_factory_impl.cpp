@@ -15,6 +15,7 @@
 #include "score/mw/com/impl/bindings/lola/partial_restart_path_builder.h"
 #include "score/mw/com/impl/bindings/lola/shm_path_builder.h"
 #include "score/mw/com/impl/bindings/lola/skeleton.h"
+#include "score/mw/com/impl/runtime.h"
 
 #include "score/filesystem/filesystem.h"
 
@@ -62,8 +63,15 @@ auto SkeletonBindingFactoryImpl::Create(const InstanceIdentifier& identifier) no
     auto visitor = score::cpp::overload(
         [&identifier](const LolaServiceInstanceDeployment&) -> std::unique_ptr<SkeletonBinding> {
             score::filesystem::Filesystem filesystem = filesystem::FilesystemFactory{}.CreateInstance();
+
+            // Get the global configuration to access the configured shm-path-prefix
+            auto* const lola_runtime =
+                dynamic_cast<lola::IRuntime*>(impl::Runtime::getInstance().GetBindingRuntime(BindingType::kLoLa));
+            const auto& global_config = lola_runtime->GetGlobalConfiguration();
+
             auto shm_path_builder = std::make_unique<lola::ShmPathBuilder>(
-                GetLolaServiceTypeDeploymentFromInstanceIdentifier(identifier).service_id_);
+                GetLolaServiceTypeDeploymentFromInstanceIdentifier(identifier).service_id_,
+                global_config.GetShmPathPrefix());
             auto partial_restart_path_builder = std::make_unique<lola::PartialRestartPathBuilder>(
                 GetLolaServiceTypeDeploymentFromInstanceIdentifier(identifier).service_id_);
             return lola::Skeleton::Create(
