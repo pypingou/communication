@@ -182,14 +182,14 @@ std::string GetControlChannelShmPath(const LolaServiceInstanceDeployment& lola_s
                                      const IShmPathBuilder& shm_path_builder) noexcept
 {
     const auto instance_id = lola_service_instance_deployment.instance_id_.value().GetId();
-    return shm_path_builder.GetControlChannelShmName(instance_id, quality_type);
+    return shm_path_builder.GetControlChannelPath(instance_id, quality_type);
 }
 
 std::string GetDataChannelShmPath(const LolaServiceInstanceDeployment& lola_service_instance_deployment,
                                   const IShmPathBuilder& shm_path_builder) noexcept
 {
     const auto instance_id = lola_service_instance_deployment.instance_id_.value().GetId();
-    return shm_path_builder.GetDataChannelShmName(instance_id);
+    return shm_path_builder.GetDataChannelPath(instance_id);
 }
 
 }  // namespace
