@@ -140,8 +140,8 @@ OpenSharedMemory(const LolaServiceInstanceDeployment& instance_deployment,
     const auto& global_config = lola_runtime->GetGlobalConfiguration();
 
     ShmPathBuilder shm_path_builder{lola_service_deployment.service_id_, global_config.GetShmPathPrefix()};
-    const auto control_shm = shm_path_builder.GetControlChannelShmName(lola_service_instance_id.GetId(), quality_type);
-    const auto data_shm = shm_path_builder.GetDataChannelShmName(lola_service_instance_id.GetId());
+    const auto control_shm = shm_path_builder.GetControlChannelPath(lola_service_instance_id.GetId(), quality_type);
+    const auto data_shm = shm_path_builder.GetDataChannelPath(lola_service_instance_id.GetId());
 
     const std::shared_ptr<memory::shared::ManagedMemoryResource> control =
         score::memory::shared::SharedMemoryFactory::Open(control_shm, true, providers);
