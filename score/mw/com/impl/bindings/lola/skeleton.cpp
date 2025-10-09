@@ -468,7 +468,7 @@ bool Skeleton::CreateSharedMemoryForData(
         }
     }
 
-    const auto path = shm_path_builder_->GetDataChannelShmName(lola_instance_id_);
+    const auto path = shm_path_builder_->GetDataChannelPath(lola_instance_id_);
     const bool use_typed_memory = register_shm_object_trace_callback.has_value();
     const memory::shared::SharedMemoryFactory::UserPermissions user_permissions =
         (permissions.empty()) && (instance.strict_permissions_ == false)
@@ -522,7 +522,7 @@ bool Skeleton::CreateSharedMemoryForControl(const LolaServiceInstanceDeployment&
                                             const QualityType asil_level,
                                             const std::size_t shm_size) noexcept
 {
-    const auto path = shm_path_builder_->GetControlChannelShmName(lola_instance_id_, asil_level);
+    const auto path = shm_path_builder_->GetControlChannelPath(lola_instance_id_, asil_level);
 
     const auto consumer = instance.allowed_consumer_.find(asil_level);
     auto& control_resource = (asil_level == QualityType::kASIL_QM) ? control_qm_resource_ : control_asil_resource_;
