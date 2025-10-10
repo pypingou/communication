@@ -39,7 +39,20 @@ class ShmPathBuilder : public IShmPathBuilder
     /// Create a path builder.
     ///
     /// \param service_id ServiceId of path to be created
-    explicit ShmPathBuilder(const std::uint16_t service_id) noexcept : IShmPathBuilder{}, service_id_{service_id} {}
+    explicit ShmPathBuilder(const std::uint16_t service_id) noexcept : IShmPathBuilder{}, service_id_{service_id}, shm_path_prefix_{
+#if defined(__QNXNTO__)
+        "/dev/shmem/"
+#else
+        "/dev/shm/"
+#endif
+    } {}
+
+    /// Create a path builder with custom path prefix.
+    ///
+    /// \param service_id ServiceId of path to be created
+    /// \param shm_path_prefix Custom path prefix for shared memory objects
+    ShmPathBuilder(const std::uint16_t service_id, std::string shm_path_prefix) noexcept
+        : IShmPathBuilder{}, service_id_{service_id}, shm_path_prefix_{std::move(shm_path_prefix)} {}
 
     /// Returns the file name to the control shared memory file.
     ///
@@ -90,6 +103,7 @@ class ShmPathBuilder : public IShmPathBuilder
 
   private:
     const std::uint16_t service_id_;
+    std::string shm_path_prefix_;
 };
 
 }  // namespace score::mw::com::impl::lola

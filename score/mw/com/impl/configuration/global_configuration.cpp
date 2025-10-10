@@ -25,7 +25,14 @@ GlobalConfiguration::GlobalConfiguration() noexcept
       message_rx_queue_size_qm{DEFAULT_MIN_NUM_MESSAGES_RX_QUEUE},
       message_rx_queue_size_b{DEFAULT_MIN_NUM_MESSAGES_RX_QUEUE},
       message_tx_queue_size_b{DEFAULT_MIN_NUM_MESSAGES_TX_QUEUE},
-      shm_size_calc_mode_{ShmSizeCalculationMode::kSimulation}
+      shm_size_calc_mode_{ShmSizeCalculationMode::kSimulation},
+      shm_path_prefix_{
+#if defined(__QNXNTO__)
+          "/dev/shmem/"
+#else
+          "/dev/shm/"
+#endif
+      }
 {
 }
 

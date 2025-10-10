@@ -78,6 +78,7 @@ constexpr auto kAllowedConsumerKey = "allowedConsumer"sv;
 constexpr auto kAllowedProviderKey = "allowedProvider"sv;
 constexpr auto kQueueSizeKey = "queue-size"sv;
 constexpr auto kShmSizeCalcModeKey = "shm-size-calc-mode"sv;
+constexpr auto kShmPathPrefixKey = "shm-path-prefix"sv;
 constexpr auto kTracingPropertiesKey = "tracing"sv;
 constexpr auto kTracingEnabledKey = "enable"sv;
 constexpr auto kTracingGloballyEnabledDefaultValue = false;
@@ -276,6 +277,35 @@ auto ParseShmSizeCalcMode(const score::json::Any& json) -> score::cpp::optional<
             /* Terminate call tolerated.See Assumptions of Use in mw/com/design/README.md*/
             std::terminate();
         }
+    }
+
+    return score::cpp::nullopt;
+}
+
+auto ParseShmPathPrefix(const score::json::Any& json) -> score::cpp::optional<std::string>
+{
+    auto json_obj = json.As<score::json::Object>();
+    if (!json_obj.has_value()) {
+        return score::cpp::nullopt;
+    }
+    const auto& json_map = json_obj.value().get();
+    const auto& shm_path_prefix = json_map.find(kShmPathPrefixKey.data());
+    if (shm_path_prefix != json_map.cend())
+    {
+        auto path_result = shm_path_prefix->second.As<std::string>();
+        if (!path_result.has_value()) {
+            score::mw::log::LogError("lola") << "Configuration error: shm-path-prefix must be a string value. "
+                                             << "Please check your configuration file and ensure shm-path-prefix "
+                                             << "is specified as a string (e.g., \"/dev/shm/\")";
+            std::terminate();
+        }
+        auto shm_path_prefix_value = std::move(path_result.value().get());
+
+        // Ensure the path ends with a slash
+        if (!shm_path_prefix_value.empty() && shm_path_prefix_value.back() != '/') {
+            shm_path_prefix_value += '/';
+        }
+        return shm_path_prefix_value;
     }
 
     return score::cpp::nullopt;
@@ -1242,6 +1272,13 @@ auto ParseGlobalProperties(const score::json::Any& json) noexcept -> GlobalConfi
         if (shm_size_calc_mode.has_value())
         {
             global_configuration.SetShmSizeCalcMode(shm_size_calc_mode.value());
+        }
+
+        const score::cpp::optional<std::string> shm_path_prefix{
+            ParseShmPathPrefix(process_properties->second)};
+        if (shm_path_prefix.has_value())
+        {
+            global_configuration.SetShmPathPrefix(shm_path_prefix.value());
         }
 
         auto process_properties_obj = process_properties->second.As<json::Object>();

@@ -20,6 +20,7 @@
 
 #include <sys/types.h>
 #include <cstdint>
+#include <string>
 
 namespace score::mw::com::impl
 {
@@ -85,6 +86,16 @@ class GlobalConfiguration final
         return shm_size_calc_mode_;
     }
 
+    void SetShmPathPrefix(std::string shm_path_prefix) noexcept
+    {
+        shm_path_prefix_ = std::move(shm_path_prefix);
+    }
+
+    const std::string& GetShmPathPrefix() const noexcept
+    {
+        return shm_path_prefix_;
+    }
+
   private:
     /// properties/settings from the "global" section
     QualityType process_asil_level_;
@@ -95,6 +106,7 @@ class GlobalConfiguration final
     std::int32_t message_tx_queue_size_b;
 
     ShmSizeCalculationMode shm_size_calc_mode_;
+    std::string shm_path_prefix_;
 };
 
 }  // namespace score::mw::com::impl

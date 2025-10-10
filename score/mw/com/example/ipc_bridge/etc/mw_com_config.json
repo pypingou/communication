@@ -59,5 +59,8 @@
         }
       ]
     }
-  ]
+  ],
+  "global": {
+    "shm-path-prefix": "/dev/shm/lola_qm/"
+  }
 }

@@ -119,14 +119,14 @@ std::string ShmPathBuilder::GetDataChannelFileName(const LolaServiceInstanceId::
 std::string ShmPathBuilder::GetControlChannelPath(const LolaServiceInstanceId::InstanceId instance_id,
                                                   const QualityType channel_type) const noexcept
 {
-    return EmitWithPrefix(kSharedMemoryPathPrefix, [this, channel_type, instance_id](auto& out) noexcept {
+    return EmitWithPrefix(shm_path_prefix_, [this, channel_type, instance_id](auto& out) noexcept {
         EmitControlFileName(out, channel_type, service_id_, instance_id);
     });
 }
 
 std::string ShmPathBuilder::GetDataChannelPath(const LolaServiceInstanceId::InstanceId instance_id) const noexcept
 {
-    return EmitWithPrefix(kSharedMemoryPathPrefix, [this, instance_id](auto& out) noexcept {
+    return EmitWithPrefix(shm_path_prefix_, [this, instance_id](auto& out) noexcept {
         EmitDataFileName(out, service_id_, instance_id);
     });
 }
