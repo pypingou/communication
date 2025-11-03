@@ -1049,25 +1049,25 @@ using TracingRuntimeShmMetaInfoFixture = TracingRuntimeMetaInfoParamaterisedFixt
 INSTANTIATE_TEST_CASE_P(TracingRuntimeShmMetaInfoFixture,
                         TracingRuntimeShmMetaInfoFixture,
                         ::testing::Values(MetaInfoTestData{SkeletonEventTracePointType::SEND,
-                                                           analysis::tracing::TracePointType::kSkelEventSnd},
+                                                           analysis::tracing::TracePointType::SKEL_EVENT_SND},
                                           MetaInfoTestData{SkeletonEventTracePointType::SEND_WITH_ALLOCATE,
-                                                           analysis::tracing::TracePointType::kSkelEventSndA},
+                                                           analysis::tracing::TracePointType::SKEL_EVENT_SND_A},
                                           MetaInfoTestData{SkeletonFieldTracePointType::UPDATE,
-                                                           analysis::tracing::TracePointType::kSkelFieldUpd},
+                                                           analysis::tracing::TracePointType::SKEL_FIELD_UPD},
                                           MetaInfoTestData{SkeletonFieldTracePointType::UPDATE_WITH_ALLOCATE,
-                                                           analysis::tracing::TracePointType::kSkelFieldUpdA}));
+                                                           analysis::tracing::TracePointType::SKEL_FIELD_UPD_A}));
 
 using TracingRuntimeLocalMetaInfoFixture = TracingRuntimeMetaInfoParamaterisedFixture;
 INSTANTIATE_TEST_CASE_P(TracingRuntimeLocalMetaInfoFixture,
                         TracingRuntimeLocalMetaInfoFixture,
                         ::testing::Values(MetaInfoTestData{ProxyEventTracePointType::GET_NEW_SAMPLES,
-                                                           analysis::tracing::TracePointType::kProxyEventGetSamples},
+                                                           analysis::tracing::TracePointType::PROXY_EVENT_GET_SAMPLES},
                                           MetaInfoTestData{ProxyEventTracePointType::SUBSCRIBE,
-                                                           analysis::tracing::TracePointType::kProxyEventSub},
+                                                           analysis::tracing::TracePointType::PROXY_EVENT_SUB},
                                           MetaInfoTestData{ProxyFieldTracePointType::GET_NEW_SAMPLES,
-                                                           analysis::tracing::TracePointType::kProxyFieldGetSamples},
+                                                           analysis::tracing::TracePointType::PROXY_FIELD_GET_SAMPLES},
                                           MetaInfoTestData{ProxyFieldTracePointType::SUBSCRIBE,
-                                                           analysis::tracing::TracePointType::kProxyFieldSub}));
+                                                           analysis::tracing::TracePointType::PROXY_FIELD_SUB}));
 
 TEST_P(TracingRuntimeShmMetaInfoFixture, ShmTraceCallMetaInfoContainsAraComMetaInfo)
 {
