@@ -7,3 +7,22 @@ user.bazelrc
 .cache/*
 compile_commands.json
 rust-project.json
+
+# Build artifacts and logs
+*.log
+*.rpm
+*.tar.gz
+builder-live*.log
+
+# AutoSD demo artifacts
+autosd_demo/
+*.img
+
+# Patch files (unless specifically needed)
+*.patch
+
+# Claude Code directory
+.claude/
+
+# Container ignore files (project-specific)
+.containerignore
