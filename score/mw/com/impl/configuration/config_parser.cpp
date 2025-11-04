@@ -130,8 +130,8 @@ auto ParseInstanceSpecifier(const score::json::Any& json) -> InstanceSpecifier
             score::mw::log::LogFatal("lola") << "Invalid InstanceSpecifier.";
             std::terminate();
         }
-        const auto& string_view = string_result.value().get();
-        const auto instance_specifier_result = InstanceSpecifier::Create(string_view);
+        auto instance_specifier_string = std::string{string_result.value().get()};
+        const auto instance_specifier_result = InstanceSpecifier::Create(std::move(instance_specifier_string));
         if (!instance_specifier_result.has_value())
         {
             score::mw::log::LogFatal("lola") << "Invalid InstanceSpecifier.";
@@ -299,7 +299,7 @@ auto ParseShmPathPrefix(const score::json::Any& json) -> score::cpp::optional<st
                                              << "is specified as a string (e.g., \"/dev/shm/\")";
             std::terminate();
         }
-        auto shm_path_prefix_value = std::move(path_result.value().get());
+        auto shm_path_prefix_value = path_result.value().get();
 
         // Ensure the path ends with a slash
         if (!shm_path_prefix_value.empty() && shm_path_prefix_value.back() != '/') {
