@@ -59,7 +59,7 @@ TEST_F(NonAllocatingFutureTestFixture, NonSyncFutureMethodsGiveExpectedAccessBut
     std::int32_t counter{0};
     detail::NonAllocatingFuture future1{mutex_, condition_};
     detail::NonAllocatingFuture future2{mutex_, condition_, counter};
-    (void)future1;
+    score::cpp::ignore = future1;
     EXPECT_EQ(&future2.GetValueForUpdate(), &counter);
     EXPECT_EQ(&future2.GetValue(), &counter);
 
