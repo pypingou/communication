@@ -36,6 +36,12 @@ constexpr auto MAX_REFERENCE_RETRIES = 100U;
 
 }  // namespace
 
+// Suppress false positive maybe-uninitialized warning specifically from PolymorphicOffsetPtrAllocator constructor
+// in state_slots_ and transaction_log_set_ initialization. GCC incorrectly flags the 'proxy' parameter as potentially
+// uninitialized during offset pointer arithmetic in score-baselibs OffsetPtr::CalculateOffsetFromPointer.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+
 template <template <class> class AtomicIndirectorType>
 // Suppress "AUTOSAR C++14 A15-5-3" rule findings. This rule states: "The std::terminate() function shall not be called
 // implicitly". we can't mark the constructor of 'score::containers::DynamicArray' as noexcept because this will generate
@@ -48,8 +54,9 @@ EventDataControlImpl<AtomicIndirectorType>::EventDataControlImpl(
     const LolaEventInstanceDeployment::SubscriberCountType max_number_combined_subscribers) noexcept
     : state_slots_{max_slots, proxy}, transaction_log_set_{max_number_combined_subscribers, max_slots, proxy}
 {
-    score::cpp::ignore = proxy; // Suppress false positive uninitialized warning
 }
+
+#pragma GCC diagnostic pop
 
 template <template <class> class AtomicIndirectorType>
 // Suppress "AUTOSAR C++14 A15-5-3" rule findings. This rule states: "The std::terminate() function shall not be called
