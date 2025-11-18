@@ -14,6 +14,10 @@ use std::ffi::CString;
 use std::fmt::{self, Debug, Formatter};
 use std::marker::PhantomData;
 use std::mem::{drop, ManuallyDrop};
+
+// Import other modules from the crate
+use crate::sample_ptr_rs;
+
 ///! This module provides boilerplate for a generated bridge between the Rust and C++ code for the
 ///! proxy side of a service.
 ///!
@@ -288,7 +292,7 @@ impl<T: ProxyOps> ProxyManager<T> {
 /// their generated counterparts on C++ side.
 pub trait EventOps: Sized {
     /// Retrieve a reference to the data pointed to by the given sample pointer.
-    fn get_sample_ref(ptr: &sample_ptr_rs::SamplePtr<Self>) -> &Self;
+    fn get_sample_ref<'a>(ptr: &'a sample_ptr_rs::SamplePtr<Self>) -> &'a Self;
 
     /// Delete the given sample pointer.
     fn delete_sample_ptr(ptr: sample_ptr_rs::SamplePtr<Self>);
@@ -675,7 +679,7 @@ pub fn find_service(instance_specifier: InstanceSpecifier) -> Result<HandleConta
 
 /// This struct represents a sample pointer, which is a pointer to data received on a subscribed
 /// event.
-#[repr(transparent)]
+#[repr(C)]
 pub struct SamplePtr<'a, T>
 where
     T: EventOps,

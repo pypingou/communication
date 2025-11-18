@@ -17,18 +17,18 @@ pub trait TypeInfo {
 
 #[doc(hidden)]
 pub mod proxy_bridge {
-    pub use proxy_bridge_rs::*;
-    pub use sample_ptr_rs::SamplePtr;
+    pub use crate::proxy_bridge_rs::*;
+    pub use crate::sample_ptr_rs::SamplePtr;
 }
 
 #[doc(hidden)]
 pub mod skeleton_bridge {
-    pub use skeleton_bridge_rs::*;
+    pub use crate::skeleton_bridge_rs::*;
 }
 
 #[doc(hidden)]
 pub mod common_types {
-    pub use common::*;
+    pub use crate::common::*;
 }
 
 #[macro_export]
@@ -39,15 +39,15 @@ macro_rules! import_type {
             unsafe extern "C" {
                 #[link_name=concat!("mw_com_gen_SamplePtr_", stringify!($uid), "_get")]
                 pub unsafe fn get(
-                    sample_ptr: *const $crate::proxy_bridge::SamplePtr<$ctype>,
+                    sample_ptr: *const $crate::sample_ptr_rs::SamplePtr<$ctype>,
                 ) -> *const $ctype;
                 #[link_name=concat!("mw_com_gen_ProxyEvent_", stringify!($uid), "_get_new_sample")]
                 pub unsafe fn get_new_sample(
                     proxy_event: *mut $crate::proxy_bridge::NativeProxyEvent<$ctype>,
-                    sample_out: *mut $crate::proxy_bridge::SamplePtr<$ctype>,
+                    sample_out: *mut $crate::sample_ptr_rs::SamplePtr<$ctype>,
                 ) -> bool;
                 #[link_name=concat!("mw_com_gen_SamplePtr_", stringify!($uid), "_delete")]
-                pub unsafe fn delete(sample_ptr: *mut $crate::proxy_bridge::SamplePtr<$ctype>);
+                pub unsafe fn delete(sample_ptr: *mut $crate::sample_ptr_rs::SamplePtr<$ctype>);
                 #[link_name=concat!("mw_com_gen_", stringify!($uid), "_get_size")]
                 pub safe fn get_size() -> u32;
                 #[link_name=concat!("mw_com_gen_SkeletonEvent_", stringify!($uid), "_send")]
@@ -59,11 +59,11 @@ macro_rules! import_type {
         }
 
         impl $crate::proxy_bridge::EventOps for $ctype {
-            fn get_sample_ref(ptr: &$crate::proxy_bridge::SamplePtr<Self>) -> &Self {
+            fn get_sample_ref<'a>(ptr: &'a $crate::sample_ptr_rs::SamplePtr<Self>) -> &'a Self {
                 unsafe { &*$uid::get(ptr) }
             }
 
-            fn delete_sample_ptr(mut ptr: $crate::proxy_bridge::SamplePtr<Self>) {
+            fn delete_sample_ptr(mut ptr: $crate::sample_ptr_rs::SamplePtr<Self>) {
                 unsafe {
                     $uid::delete(&mut ptr);
                 }
@@ -71,7 +71,7 @@ macro_rules! import_type {
 
             unsafe fn get_new_sample(
                 proxy_event: *mut $crate::proxy_bridge::NativeProxyEvent<Self>,
-            ) -> Option<$crate::proxy_bridge::SamplePtr<Self>> {
+            ) -> Option<$crate::sample_ptr_rs::SamplePtr<Self>> {
                 let mut sample_ptr = std::mem::MaybeUninit::uninit();
                 unsafe {
                     if $uid::get_new_sample(proxy_event, sample_ptr.as_mut_ptr()) {

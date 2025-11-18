@@ -12,6 +12,9 @@
  ********************************************************************************/
 use std::sync::Arc;
 
+// Import other modules from the crate
+use crate::common;
+
 mod ffi {
     use std::marker::PhantomData;
 
