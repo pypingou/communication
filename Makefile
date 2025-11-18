@@ -59,6 +59,8 @@ BIN_DIR = $(BUILD_DIR)/bin
 # Output libraries
 MAIN_LIB = $(LIB_DIR)/libscore-mw-com.so
 MESSAGE_PASSING_LIB = $(LIB_DIR)/libscore-message-passing.so
+RUST_BRIDGE_LIB = $(LIB_DIR)/libscore-rust-bridge.so
+IPC_BRIDGE_LIB = $(LIB_DIR)/libscore-ipc-bridge.so
 
 # =============================================================================
 # Source Files (extracted from BUILD file analysis)
@@ -215,15 +217,12 @@ LOLA_SOURCES = \
 LOLA_MESSAGING_SOURCES = \
 	score/mw/com/impl/bindings/lola/messaging/i_message_passing_service.cpp \
 	score/mw/com/impl/bindings/lola/messaging/message_passing_client_cache.cpp \
-	score/mw/com/impl/bindings/lola/messaging/message_passing_control.cpp \
-	score/mw/com/impl/bindings/lola/messaging/message_passing_facade.cpp \
 	score/mw/com/impl/bindings/lola/messaging/message_passing_service.cpp \
 	score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance.cpp \
 	score/mw/com/impl/bindings/lola/messaging/messages/message_common.cpp \
 	score/mw/com/impl/bindings/lola/messaging/messages/message_element_fq_id.cpp \
 	score/mw/com/impl/bindings/lola/messaging/messages/message_outdated_nodeid.cpp \
 	score/mw/com/impl/bindings/lola/messaging/node_identifier_copier.cpp \
-	score/mw/com/impl/bindings/lola/messaging/notify_event_handler.cpp \
 	score/mw/com/impl/bindings/lola/messaging/thread_abstraction.cpp
 
 # LoLa service discovery sources
@@ -363,7 +362,7 @@ all: libs examples
 all-with-benchmarks: libs examples benchmarks
 
 # Build libraries
-libs: $(MAIN_LIB) $(MESSAGE_PASSING_LIB)
+libs: $(MAIN_LIB) $(MESSAGE_PASSING_LIB) $(RUST_BRIDGE_LIB) $(IPC_BRIDGE_LIB)
 
 # Build examples
 examples: $(BIN_DIR)/ipc_bridge_cpp $(BIN_DIR)/ipc_bridge_rs
@@ -381,21 +380,43 @@ $(MESSAGE_PASSING_LIB): $(MESSAGE_PASSING_OBJECTS) | $(LIB_DIR)
 	@echo "Linking message passing library: $@"
 	$(CXX) $(LDFLAGS) $(SHARED_LDFLAGS) -Wl,-soname,libscore-message-passing.so -o $@ $^ $(LIBS)
 
-# Build C++ example application
-$(BIN_DIR)/ipc_bridge_cpp: $(EXAMPLE_OBJECTS) $(OBJ_DIR)/score/mw/com/example/ipc_bridge/main.o $(MAIN_LIB) $(MESSAGE_PASSING_LIB) | $(BIN_DIR)
-	@echo "Linking C++ example application: $@"
-	$(CXX) -o $@ $(EXAMPLE_OBJECTS) $(OBJ_DIR)/score/mw/com/example/ipc_bridge/main.o -L$(LIB_DIR) -lscore-mw-com -lscore-message-passing $(LIBS) $(SCORE_LIB_PATHS) $(SCORE_LIBS) $(BOOST_LIBS)
+# Create Rust bridge library
+$(RUST_BRIDGE_LIB): $(OBJ_DIR)/score/mw/com/impl/rust/proxy_bridge.o $(OBJ_DIR)/score/mw/com/impl/rust/bridge_macros.o $(MAIN_LIB) $(MESSAGE_PASSING_LIB) | $(LIB_DIR)
+	@echo "Linking Rust bridge library: $@"
+	$(CXX) $(LDFLAGS) $(SHARED_LDFLAGS) -Wl,-soname,libscore-rust-bridge.so -o $@ $^ -L$(LIB_DIR) -lscore-mw-com -lscore-message-passing $(LIBS) $(SCORE_LIB_PATHS) $(SCORE_LIBS)
 
-# Build Rust example application
-$(BIN_DIR)/ipc_bridge_rs: score/mw/com/example/ipc_bridge/ipc_bridge.rs score/mw/com/example/ipc_bridge/ipc_bridge_gen.rs $(MAIN_LIB) $(MESSAGE_PASSING_LIB) | $(BIN_DIR)
-	@echo "Linking Rust example application: $@"
-	@if command -v rustc >/dev/null 2>&1; then \
-		rustc --extern score_mw_com=$(LIB_DIR)/libscore-mw-com.so \
-		      --extern score_message_passing=$(LIB_DIR)/libscore-message-passing.so \
-		      -L $(LIB_DIR) \
-		      -o $@ score/mw/com/example/ipc_bridge/ipc_bridge.rs; \
+# Create IPC bridge library
+$(IPC_BRIDGE_LIB): $(OBJ_DIR)/score/mw/com/example/ipc_bridge/ipc_bridge_gen.o $(OBJ_DIR)/score/mw/com/example/ipc_bridge/datatype.o $(RUST_BRIDGE_LIB) | $(LIB_DIR)
+	@echo "Linking IPC bridge library: $@"
+	$(CXX) $(LDFLAGS) $(SHARED_LDFLAGS) -Wl,-soname,libscore-ipc-bridge.so -o $@ $^ -L$(LIB_DIR) -lscore-mw-com -lscore-message-passing -lscore-rust-bridge $(LIBS) $(SCORE_LIB_PATHS) $(SCORE_LIBS)
+
+# Build C++ example application
+$(BIN_DIR)/ipc_bridge_cpp: $(OBJ_DIR)/score/mw/com/example/ipc_bridge/assert_handler.o $(OBJ_DIR)/score/mw/com/example/ipc_bridge/sample_sender_receiver.o $(OBJ_DIR)/score/mw/com/example/ipc_bridge/main.o $(RUST_BRIDGE_LIB) $(IPC_BRIDGE_LIB) | $(BIN_DIR)
+	@echo "Linking C++ example application: $@"
+	$(CXX) -o $@ $(OBJ_DIR)/score/mw/com/example/ipc_bridge/assert_handler.o $(OBJ_DIR)/score/mw/com/example/ipc_bridge/sample_sender_receiver.o $(OBJ_DIR)/score/mw/com/example/ipc_bridge/main.o -L$(LIB_DIR) -lscore-mw-com -lscore-message-passing -lscore-rust-bridge -lscore-ipc-bridge $(LIBS) $(SCORE_LIB_PATHS) $(SCORE_LIBS) $(BOOST_LIBS)
+
+# Build the mw_com Rust library (pure Rust, no C++ linking needed)
+$(LIB_DIR)/libmw_com.rlib: score/mw/com/impl/rust/Cargo.toml | $(LIB_DIR)
+	@echo "Building mw_com Rust library..."
+	@if command -v cargo >/dev/null 2>&1; then \
+		cd score/mw/com/impl/rust && \
+		cargo build --release && \
+		cp target/release/libmw_com.rlib $(shell pwd)/$(LIB_DIR)/libmw_com.rlib; \
 	else \
-		echo "Rust compiler not found, skipping Rust example"; \
+		echo "Cargo not found, skipping Rust library build"; \
+		touch $@; \
+	fi
+
+# Build Rust example application (links against C++ libraries)
+$(BIN_DIR)/ipc_bridge_rs: $(LIB_DIR)/libmw_com.rlib $(RUST_BRIDGE_LIB) $(IPC_BRIDGE_LIB) score/mw/com/example/ipc_bridge/Cargo.toml | $(BIN_DIR)
+	@echo "Building Rust example application: $@"
+	@if command -v cargo >/dev/null 2>&1; then \
+		cd score/mw/com/example/ipc_bridge && \
+		RUSTFLAGS="-L $(shell pwd)/$(LIB_DIR) -l score-mw-com -l score-message-passing -l score-rust-bridge -l score-ipc-bridge -l stdc++" \
+		cargo build --release --bin ipc_bridge_rs && \
+		cp target/release/ipc_bridge_rs $(shell pwd)/$(BIN_DIR)/ipc_bridge_rs; \
+	else \
+		echo "Cargo not found, skipping Rust example"; \
 		touch $@; \
 	fi
 
@@ -473,6 +494,8 @@ install: libs examples
 	# Install libraries
 	install -m 644 $(MAIN_LIB) $(LIBDIR)/
 	install -m 644 $(MESSAGE_PASSING_LIB) $(LIBDIR)/
+	install -m 644 $(RUST_BRIDGE_LIB) $(LIBDIR)/
+	install -m 644 $(IPC_BRIDGE_LIB) $(LIBDIR)/
 
 	# Install example binaries
 	if [ -f $(BIN_DIR)/ipc_bridge_cpp ]; then install -m 755 $(BIN_DIR)/ipc_bridge_cpp $(BINDIR)/; fi
@@ -522,6 +545,8 @@ uninstall:
 	@echo "Uninstalling Score Communication Module..."
 	rm -f $(LIBDIR)/libscore-mw-com.so
 	rm -f $(LIBDIR)/libscore-message-passing.so
+	rm -f $(LIBDIR)/libscore-rust-bridge.so
+	rm -f $(LIBDIR)/libscore-ipc-bridge.so
 	rm -f $(BINDIR)/ipc_bridge_example
 	rm -rf $(INCLUDEDIR)/score/mw/com
 	@echo "Uninstallation complete."
@@ -541,6 +566,9 @@ test:
 clean:
 	@echo "Cleaning build directory..."
 	rm -rf $(BUILD_DIR)
+	@echo "Cleaning Rust build artifacts..."
+	@if [ -d score/mw/com/impl/rust/target ]; then rm -rf score/mw/com/impl/rust/target; fi
+	@if [ -d score/mw/com/example/ipc_bridge/target ]; then rm -rf score/mw/com/example/ipc_bridge/target; fi
 
 # =============================================================================
 # Distribution and Packaging
