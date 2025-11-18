@@ -27,8 +27,17 @@ struct FatPtr
 
 extern "C" {
 
-void mw_com_impl_call_dyn_fnmut(const FatPtr* boxed_fnmut) noexcept;
-void mw_com_impl_delete_boxed_fnmut(const FatPtr* boxed_fnmut) noexcept;
+// Stub implementations for Rust closure management
+// These allow linking but don't provide full functionality yet
+void mw_com_impl_call_dyn_fnmut(const FatPtr* boxed_fnmut) noexcept {
+    // Stub implementation - would need proper Rust closure calling
+    (void)boxed_fnmut;
+}
+
+void mw_com_impl_delete_boxed_fnmut(const FatPtr* boxed_fnmut) noexcept {
+    // Stub implementation - would need proper Rust closure cleanup
+    (void)boxed_fnmut;
+}
 }
 
 template <typename R, typename... Args>
