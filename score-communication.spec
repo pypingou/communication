@@ -5,7 +5,7 @@
 
 Name:           score-communication
 Version:        0.0.1
-Release:        7%{?dist}
+Release:        8%{?dist}
 Summary:        High-performance automotive communication middleware (LoLa)
 
 License:        Apache-2.0
@@ -85,6 +85,18 @@ Includes micro-benchmarks for API performance testing and macro-benchmarks
 for end-to-end system performance evaluation. Contains Python configuration
 generators and test utilities.
 
+%package        bridges
+Summary:        Bridge libraries for mixed-language support in %{name}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+
+%description    bridges
+Bridge libraries for Score Communication middleware enabling mixed-language
+support and interoperability. This package contains:
+- Rust-C++ bridge library (libscore-rust-bridge.so) for Rust language bindings
+- IPC bridge library (libscore-ipc-bridge.so) for inter-process communication
+These libraries enable building applications that combine Rust and C++
+components within the Score communication framework.
+
 %prep
 %autosetup -n %{name}-%{version}
 
@@ -125,6 +137,10 @@ make install-all DESTDIR=%{buildroot} PREFIX=%{_prefix} LIBDIR_SUFFIX=%{_lib}
 %{_bindir}/lola_public_api_benchmarks
 %{_datadir}/%{name}/benchmarks/
 
+%files bridges
+%{_libdir}/libscore-rust-bridge.so
+%{_libdir}/libscore-ipc-bridge.so
+
 %post
 /sbin/ldconfig
 
@@ -132,6 +148,10 @@ make install-all DESTDIR=%{buildroot} PREFIX=%{_prefix} LIBDIR_SUFFIX=%{_lib}
 /sbin/ldconfig
 
 %changelog
+* Tue Nov 18 2025 Pierre-Yves Chibon <pingou@pingoured.fr> - 0.0.1-8
+- Rebuild communication, including the ipc_bridge example in rust
+- Rebase local changes on top of commit 62aeefe9cea5fb220525d237cdb3cdf4c8101413
+
 * Thu Oct 09 2025 Pierre-Yves Chibon <pingou@pingoured.fr> - 0.0.1-7
 - Complete implementation of shared memory subdirectory support
 - Add hybrid approach in SharedMemoryResource to handle paths with subdirectories
