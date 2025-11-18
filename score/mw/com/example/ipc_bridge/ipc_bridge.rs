@@ -58,7 +58,7 @@ async fn get_samples<
     let map_api_lanes_stamped = pin!(map_api_lanes_stamped);
     let mut limited_map_api_lanes_stamped = map_api_lanes_stamped.take(count);
     while let Some(data) = limited_map_api_lanes_stamped.next().await {
-        println!("Received sample: {}", data.x);
+        println!("Received sample: {}", data.get_ref().x);
     }
     println!("Stream ended");
 }
