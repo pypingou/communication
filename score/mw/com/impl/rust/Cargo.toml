@@ -1,0 +1,16 @@
+[package]
+name = "mw_com"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+futures = "0.3"
+libc = "0.2"
+
+[lib]
+name = "mw_com"
+path = "lib.rs"
+
+# This will be used for linking against the C++ bridge libraries
+# The actual linking happens via the build script and rustc-link-lib
+[build-dependencies]
