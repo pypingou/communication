@@ -1,0 +1,20 @@
+[package]
+name = "ipc_bridge_rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# External dependencies
+clap = { version = "4.0", features = ["derive"] }
+futures = "0.3"
+libc = "0.2"
+
+# Local dependency on the mw_com library
+mw_com = { path = "../../impl/rust" }
+
+[[bin]]
+name = "ipc_bridge_rs"
+path = "main.rs"
+
+# Build configuration for linking against C++ libraries that will be built by the Makefile
+# The actual linking happens via rustc link flags in the Makefile
